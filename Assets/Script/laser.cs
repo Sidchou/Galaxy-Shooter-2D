@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class laser : MonoBehaviour
+public class Laser : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 7;

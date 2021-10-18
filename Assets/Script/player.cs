@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player : MonoBehaviour
+public class Player : MonoBehaviour
 {
     // speed veriable
     [SerializeField]
@@ -12,12 +12,21 @@ public class player : MonoBehaviour
     [SerializeField]
     private float _fireRate = 0.5f; 
     private float _nextFire = 0.0f;
+    [SerializeField]
+    private int _lives = 3 ;
+
+    private SpawnManager _spawnManager;
+
 
     // Start is called before the first frame update
     void Start()
     {
         //initiallize position 
         transform.position = Vector3.zero;
+        _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+        if(_spawnManager == null){
+            Debug.LogError("Spawn Manager is NULL");
+        }
     }
 
     // Update is called once per frame
@@ -65,7 +74,16 @@ public class player : MonoBehaviour
     void fireLaser(){
         if(Time.time > _nextFire){
             _nextFire = Time.time + _fireRate;
-            Instantiate(_laserPrefab, transform.position + new Vector3(0,0.5f,0), Quaternion.identity);
+            Instantiate(_laserPrefab, transform.position + new Vector3(0,1.0f,0), Quaternion.identity);
+        }
+    }
+
+    public void takeDamage(){
+        _lives --;
+        if (_lives<=0)
+        { 
+            _spawnManager.OnPlayerDeath();
+            Destroy(this.gameObject);
         }
     }
 
