@@ -6,10 +6,37 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 4;
+    private Player _player;
+ 
+    private Animator _animator;
+    private bool _exploding = false;
+
+    private AudioSource _exlopsionAudio;
+
     // Start is called before the first frame update
     void Start()
     {
-      
+        _player = GameObject.Find("Player").GetComponent<Player>();
+        _animator = GetComponent<Animator>();
+        _exlopsionAudio = GetComponent<AudioSource>();
+
+        NullCheck();
+    }
+
+    void NullCheck() {
+        if (_player == null)
+        {
+            Debug.LogError("player is null");
+        }
+        if (_exlopsionAudio == null)
+        {
+            Debug.LogError("audio source is Null");
+        }
+        if (_animator == null)
+        {
+            Debug.LogError("animator is null");
+        }
+
     }
 
     // Update is called once per frame
@@ -25,24 +52,42 @@ public class Enemy : MonoBehaviour
     
     }
     private void OnTriggerEnter2D(Collider2D other){
-        Debug.Log(other);
-        if (other.tag == "Player"){
-            playerCollision(other);
-        }
+        if (!_exploding)
+        {
+            if (other.tag == "Player")
+            {
+                PlayerCollision(other);
+            }
 
-        if (other.tag == "Laser"){
-            laserCollision(other);
+            if (other.tag == "Laser")
+            {
+                LaserCollision(other);
+            }
         }
     }
-    void playerCollision(Collider2D other){
+    void PlayerCollision(Collider2D other){
         Player player = other.transform.GetComponent<Player>();
         if(player!= null){
-            player.takeDamage();
+            player.TakeDamage();
         }
-        Destroy(this.gameObject);
+        ExplosionAnimation();
     }
-    void laserCollision(Collider2D other){
+    void LaserCollision(Collider2D other){
         Destroy(other.gameObject);
-        Destroy(this.gameObject);
+
+        if (_player)
+        {
+            _player.UpdateScore(10);
+        }
+        ExplosionAnimation();
     } 
+
+    void ExplosionAnimation()
+    {
+        _exploding = true;
+        _exlopsionAudio.Play();
+        _animator.SetTrigger("EnemyDestroyed");
+        _speed = 0; 
+        Destroy(this.gameObject, 2.5f);
+    }
 }
