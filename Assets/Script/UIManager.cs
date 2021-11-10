@@ -15,6 +15,10 @@ public class UIManager : MonoBehaviour
     private Text _GameOverText;
     [SerializeField]
     private Text _RestartText;
+    [SerializeField]
+    private GameObject _menu;
+
+
     private GameManager _gameManager;
 
     // Start is called before the first frame update
@@ -30,14 +34,29 @@ public class UIManager : MonoBehaviour
             Debug.LogError("GameManager is null");
 
         }
-
+    }
+     void GameOver(bool end) {
+        StartCoroutine(TextFlicker(end));
+        _RestartText.gameObject.SetActive(end);
     }
 
-    // Update is called once per frame
-    void Update()
+    ///// Coroutine ////
+
+    IEnumerator TextFlicker(bool end) 
     {
+        while (end) {
 
+            _GameOverText.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.5f);
+            _GameOverText.gameObject.SetActive(false);
+            yield return new WaitForSeconds(0.5f);
+
+        }
+        _GameOverText.gameObject.SetActive(false);
     }
+
+
+    ///// Public Method ////
 
     public void ScoreUpDate( int score){
         string _text = "Score: " + score;
@@ -53,25 +72,18 @@ public class UIManager : MonoBehaviour
             GameOver(true);
             _gameManager.GameOver();
         }
-
-    }
-     void GameOver(bool end) {
-        StartCoroutine(TextFlicker(end));
-        _RestartText.gameObject.SetActive(end);
     }
 
-    IEnumerator TextFlicker(bool end) 
-    {
-        while (end) {
-
-            _GameOverText.gameObject.SetActive(true);
-            yield return new WaitForSeconds(0.5f);
-            _GameOverText.gameObject.SetActive(false);
-            yield return new WaitForSeconds(0.5f);
-
-        }
-        _GameOverText.gameObject.SetActive(false);
+    public void PauseMenu(bool isPaused)
+    { 
+        _menu.SetActive(isPaused);
+        _gameManager.pauseGame(isPaused);
     }
+
+
+
+
+
 
 
 }

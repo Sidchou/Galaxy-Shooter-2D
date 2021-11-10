@@ -65,14 +65,14 @@ public class Enemy : MonoBehaviour
             }
         }
     }
-    void PlayerCollision(Collider2D other){
+    private void PlayerCollision(Collider2D other){
         Player player = other.transform.GetComponent<Player>();
         if(player!= null){
             player.TakeDamage();
         }
         ExplosionAnimation();
     }
-    void LaserCollision(Collider2D other){
+    private void LaserCollision(Collider2D other){
         Destroy(other.gameObject);
 
         if (_player)
@@ -80,9 +80,9 @@ public class Enemy : MonoBehaviour
             _player.UpdateScore(10);
         }
         ExplosionAnimation();
-    } 
+    }
 
-    void ExplosionAnimation()
+    private void ExplosionAnimation()
     {
         _exploding = true;
         _exlopsionAudio.Play();
@@ -90,4 +90,6 @@ public class Enemy : MonoBehaviour
         _speed = 0; 
         Destroy(this.gameObject, 2.5f);
     }
+
+
 }

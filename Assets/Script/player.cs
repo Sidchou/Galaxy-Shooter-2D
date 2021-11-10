@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+
 public class Player : MonoBehaviour
 {
 
@@ -20,13 +21,15 @@ public class Player : MonoBehaviour
 
     [SerializeField]
     private AudioClip _laserAudioClip;
-    private AudioSource _laserAudio; 
+    private AudioSource _laserAudio;
+
 
     [SerializeField]
     private GameObject  _leftEngines, _rightEngines; 
-    [SerializeField]
     private int _lives = 3;
     private int _score = 0;
+
+    private bool _gamePaused = false;
 
 
     ///// buffs ///////
@@ -47,19 +50,19 @@ public class Player : MonoBehaviour
 
     private SpawnManager _spawnManager;
     private UIManager _UIManager;
-    private AudioManager _AudioManager;
+
 
 
 
     // Start is called before the first frame update
     void Start()
     {
+
         //initiallize position 
         transform.position = Vector3.zero;
 
         _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
         _UIManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-        _AudioManager = GameObject.Find("Audio Manager").GetComponent<AudioManager>();
         _laserAudio = GetComponent<AudioSource>();
 
         NullCheck();
@@ -71,9 +74,14 @@ public class Player : MonoBehaviour
     {
         PlayerMovement();
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !_gamePaused)
         {
             FireLaser();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseGame(!_gamePaused);
         }
 
     }
@@ -89,11 +97,7 @@ public class Player : MonoBehaviour
         {
             Debug.LogError("UI Manager is Null");
         }
-        if (_AudioManager == null)
-        {
-            Debug.LogError("audio manager is Null");
-        }
-        if (_laserAudio == null)
+            if (_laserAudio == null)
         {
             Debug.LogError("laser audio is Null");
         }
@@ -242,5 +246,13 @@ public class Player : MonoBehaviour
         _shieldActive = true;
         _shield.SetActive(true); 
     }
+
+    public void PauseGame(bool pause)
+    {
+        _gamePaused = pause;
+        _UIManager.PauseMenu(pause);
+    }
+
+
 
 }

@@ -5,22 +5,46 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
     private bool _isGameOver;
+    private void Start()
+    {
+
+    }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R) && _isGameOver)
+        if (_isGameOver)
         {
-            SceneManager.LoadScene(1);
-            _isGameOver = false;
-        }  
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                SceneManager.LoadScene(1);
+                _isGameOver = false;
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
+
+        }
+
     }
 
-    public void GameOver() {
 
-        _isGameOver = true;
+    public void pauseGame(bool pauseGame)
+    {
+        Time.timeScale = pauseGame ? 0 : 1;
+        
+    }
+    public void quitGame() {
+        Application.Quit();
     
     }
+
+
+    public void GameOver() {
+        _isGameOver = true;
+    }
+
 
 }

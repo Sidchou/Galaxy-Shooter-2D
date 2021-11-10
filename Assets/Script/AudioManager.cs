@@ -4,12 +4,28 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    //[SerializeField]
-    //private GameObject _explosion;
+  
+    [SerializeField]
+    private GameObject _getSounds;
+    private AudioSource _sounds;
+
+    
+
+    private float _musicVolume;
+    private float _soundVolume;
+    private bool _mute = false;
+
 
     // Start is called before the first frame update
     void Start()
     {
+
+        _sounds = _getSounds.GetComponent<AudioSource>();
+        if (_sounds == null)
+        {
+            Debug.LogError("sound list is null");
+        }
+
 
     }
 
@@ -18,9 +34,13 @@ public class AudioManager : MonoBehaviour
     {
 
     }
-    public void Explosion()
+    public void AdjustVolume(float val)
     {
-        //GameObject audioGO =  Instantiate(_explosion,Vector3.zero,Quaternion.identity);
-        //audioGO.transform.parent = gameObject.transform;
+        _sounds.volume = val;
+    }
+ 
+    public void Mute()
+    {
+
     }
 }
