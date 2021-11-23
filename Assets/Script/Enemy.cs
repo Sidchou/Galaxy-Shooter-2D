@@ -63,6 +63,10 @@ public class Enemy : MonoBehaviour
             {
                 LaserCollision(other);
             }
+
+            if (other.tag == "Blast") {
+                ExplosionAnimation();
+            }
         }
     }
     private void PlayerCollision(Collider2D other){

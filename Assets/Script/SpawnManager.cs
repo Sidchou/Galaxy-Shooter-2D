@@ -10,7 +10,10 @@ public class SpawnManager : MonoBehaviour
     private GameObject _enemyContainer;
     [SerializeField]
     private GameObject[] _powerup;
- 
+    [SerializeField]
+    private GameObject _laserRounds;
+    [SerializeField]
+    private GameObject _blast;
 
     private bool _stopSpawning = false;
     // Start is called before the first frame update
@@ -41,6 +44,8 @@ public class SpawnManager : MonoBehaviour
 
     IEnumerator PowerupSpawnRoutine()
     {
+        yield return new WaitForSeconds(6.0f);
+
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
         while (!_stopSpawning)
         {
@@ -52,8 +57,40 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
+    IEnumerator LaserRoundsRoutine() 
+    {
+        yield return new WaitForSeconds(2.0f);
+
+        Vector3 _spawnPosition = new Vector3(0, 6, 0);
+        while (!_stopSpawning)
+        {
+            _spawnPosition.x = Random.Range(-10f, 10f);
+            GameObject newToken = Instantiate(_laserRounds, _spawnPosition, Quaternion.identity);
+            newToken.transform.parent = gameObject.transform;
+            yield return new WaitForSeconds(Random.Range(2f, 4f));
+        }
+
+
+    }
+
+    IEnumerator SecondarySpawnRoutine()
+    {
+        yield return new WaitForSeconds(10.0f);
+
+        Vector3 _spawnPosition = new Vector3(0, 6, 0);
+        while (!_stopSpawning)
+        {
+            _spawnPosition.x = Random.Range(-10f, 10f);
+            GameObject newToken = Instantiate(_blast, _spawnPosition, Quaternion.identity);
+            newToken.transform.parent = gameObject.transform;
+            yield return new WaitForSeconds(Random.Range(20f, 40f));
+        }
+
+
+    }
+
     ///// public methods /////
-    
+
     public void OnPlayerDeath(){
         _stopSpawning = true;
     }
@@ -61,5 +98,7 @@ public class SpawnManager : MonoBehaviour
     public void StartSpawning() {
         StartCoroutine(EnemySpawnRoutine());
         StartCoroutine(PowerupSpawnRoutine());
+        StartCoroutine(LaserRoundsRoutine());
+        StartCoroutine(SecondarySpawnRoutine());
     }
 }

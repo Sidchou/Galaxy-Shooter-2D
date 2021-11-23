@@ -12,9 +12,13 @@ public class Powerup : MonoBehaviour
     0 = triple shot 
     1 = speed
     2 = sheild 
+    3 = ammo
+    4 = blast shell
     */
     [SerializeField]
     private AudioClip _powerupAudio;
+    [SerializeField]
+    private float _audioVolume = 0.75f;
     // Start is called before the first frame update
     void Start()
     {
@@ -34,7 +38,7 @@ public class Powerup : MonoBehaviour
     {
         if (other.tag == "Player") {
             Player player = other.transform.GetComponent<Player>();
-            AudioSource.PlayClipAtPoint(_powerupAudio,transform.position);
+            AudioSource.PlayClipAtPoint(_powerupAudio,transform.position,_audioVolume);
 
             switch (powerupID)
             {
@@ -47,6 +51,12 @@ public class Powerup : MonoBehaviour
                 case 2:
                     player.ShieldCollected(); 
                     break;
+                case 3:
+                    player.AmmoCollected();
+                    break;
+                case 4:
+                    player.BlastShellCollected();
+                    break;
                 default:
                     break;
             }
@@ -54,4 +64,11 @@ public class Powerup : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    public void VolumeAdjust(float level) {
+
+
+      _audioVolume = level;
+
+}
 }
