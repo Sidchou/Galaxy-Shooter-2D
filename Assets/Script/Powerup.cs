@@ -14,6 +14,7 @@ public class Powerup : MonoBehaviour
     2 = sheild 
     3 = ammo
     4 = blast shell
+    5 = big laser
     */
     [SerializeField]
     private AudioClip _powerupAudio;
@@ -56,6 +57,9 @@ public class Powerup : MonoBehaviour
                     break;
                 case 4:
                     player.BlastShellCollected();
+                    break;
+                case 5:
+                    player.BigLaser();
                     break;
                 default:
                     break;

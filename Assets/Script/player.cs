@@ -31,6 +31,8 @@ public class Player : MonoBehaviour
     private AudioClip _blastShellClip;
     [SerializeField]
     private GameObject _blastWave;
+    [SerializeField]
+    private GameObject _largeLaser;
 
     //thruster
     [SerializeField]
@@ -250,7 +252,7 @@ public class Player : MonoBehaviour
         {
             _blastShellCount--;
             _UIManager.BlastShellUpdate(_blastShellCount);
-            StartCoroutine(ShellBlastAnim());
+            StartCoroutine(ShellBlastSeq());
         }
     
     }
@@ -302,6 +304,40 @@ public class Player : MonoBehaviour
         _speedTimer = 0.0f;
         _speedActive = false;
     }
+    IEnumerator ShellBlastSeq()
+    {
+        _blastWave.SetActive(true);
+        float s = 1;
+        while (s<10f)
+        {
+            s += 0.5f;
+            yield return new WaitForSeconds(0.001f);
+            _blastWave.transform.localScale = new Vector3(s, s, s);
+        }
+
+        _blastWave.SetActive(false);
+    }
+
+    IEnumerator BigLaserSeq(){
+        _largeLaser.SetActive(true);
+        Vector3 _scale = new Vector3(0f,0f,0f);
+        while(_scale.x<10){  
+            _scale.x+= Time.deltaTime*30f;   
+            _scale.y+= Time.deltaTime;   
+            _largeLaser.transform.localScale = _scale;
+            yield return new WaitForSeconds( 0.01f);
+        }
+        while(_scale.x>5){  
+        _scale.x-= Time.deltaTime*15f;   
+        _scale.y+= Time.deltaTime*30f;   
+                    _largeLaser.transform.localScale = _scale;
+        yield return new WaitForSeconds( 0.01f);
+
+        }
+        yield return new WaitForSeconds( 3f);
+        _largeLaser.SetActive(false);
+
+    }
 
     IEnumerator CameraShake() {
         float t = 0f;
@@ -314,19 +350,7 @@ public class Player : MonoBehaviour
         _camera.transform.position = _camPos;
 
     }
-    IEnumerator ShellBlastAnim()
-    {
-        _blastWave.SetActive(true);
-        float s = 1;
-        while (s<10f)
-        {
-            s += 0.1f;
-            yield return new WaitForSeconds(0.001f);
-            _blastWave.transform.localScale = new Vector3(s, s, s);
-        }
 
-        _blastWave.SetActive(false);
-    }
     //// public method ////
 
     public void TakeDamage()
@@ -353,6 +377,7 @@ public class Player : MonoBehaviour
         _UIManager.transform.GetComponent<UIManager>().ScoreUpDate(_score);
     }
 
+    //pickups
     public void TripleShotCollected()
     {
         _tripleShotTimer = 0.0f;
@@ -395,8 +420,10 @@ public class Player : MonoBehaviour
             _UIManager.BlastShellUpdate(_blastShellCount);
         }
         
+    }
+    public void BigLaser(){
 
-
+        StartCoroutine(BigLaserSeq());
     }
 
     public void PauseGame(bool pause)
@@ -404,7 +431,5 @@ public class Player : MonoBehaviour
         _gamePaused = pause;
         _UIManager.PauseMenu(pause);
     }
-
-
 
 }

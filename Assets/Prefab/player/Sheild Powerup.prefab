@@ -138,6 +138,7 @@ MonoBehaviour:
   _speed: 3
   powerupID: 2
   _powerupAudio: {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
+  _audioVolume: 0.75
 --- !u!95 &1427020841436480453
 Animator:
   serializedVersion: 3
