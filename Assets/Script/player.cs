@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+
+    [SerializeField]
+    private float _slowSpeed = 1.0f;
     // speed
     [SerializeField]
     private float _defaultSpeed = 4.0f;
@@ -33,6 +36,8 @@ public class Player : MonoBehaviour
     private GameObject _blastWave;
     [SerializeField]
     private GameObject _largeLaser;
+    [SerializeField]
+    private GameObject _missile;
 
     //thruster
     [SerializeField]
@@ -51,17 +56,18 @@ public class Player : MonoBehaviour
 
     private int _blastShellCount = 1;
 
+    private int _missileCount = 3;
+
     private bool _gamePaused = false;
 
 
+    ///// debuffs ///////
+    private bool _speedDebuffed = false;
+
     ///// buffs ///////
-
- 
-
     private bool _tripleShotActive = false;
     private float _tripleShotTimer = 0.0f;
 
-    [SerializeField]
     private bool _speedActive = false;
     private float _speedTimer = 0.0f;
 
@@ -97,8 +103,10 @@ public class Player : MonoBehaviour
 
         NullCheck();
         _laserAudio.clip = _laserAudioClip;
+
         ShieldUpdate();
-        
+        _UIManager.BlastShellUpdate(_blastShellCount);
+        _UIManager.MissileUpdate(_missileCount);
     }
 
     // Update is called once per frame
@@ -118,6 +126,9 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
         {
             ShellBalst();
+        }
+        if (Input.GetKeyDown(KeyCode.E)){
+            FireMissile();
         }
 
     }
@@ -165,19 +176,28 @@ public class Player : MonoBehaviour
 
     float SpeedCalculation() {
         float _speed = _defaultSpeed;
-        Vector3 _thrusterScale = new Vector3(0.5f, 1f, 1f);
+        Vector3 _thrusterScale = new Vector3(0.5f, 0.75f, 0.75f);
 
-        if (_speedActive)
+        if ( Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
+        {
+            _thrusterScale =  Vector3.zero;
+        }
+        
+        if (_speedDebuffed)
+        {
+            _speed = _slowSpeed;
+            _thrusterScale = new Vector3(0.25f, 0.6f, 0.6f);
+        } else if (_speedActive)
         {
             _speed = _boostSpeed;
             float anim = Mathf.Sin(Time.time * 10.0f) * 0.1f;
-            _thrusterScale = new Vector3(1f + anim, 1f, 1f);
+            _thrusterScale = new Vector3(1f + anim, 0.75f, 0.75f);
 
         }
         else if (Input.GetKey(KeyCode.LeftShift) && !_thrusterDisable)
         {
             _speed = _thrustSpeed;
-            _thrusterScale = new Vector3(0.8f, 1f, 1f);
+            _thrusterScale = new Vector3(0.8f, 0.8f, 0.8f);
             _thrusterCharge -= Time.deltaTime*0.5f;
 
             if (_thrusterCharge < 0.05f)
@@ -189,7 +209,7 @@ public class Player : MonoBehaviour
         {
             _thrusterCharge += Time.deltaTime * 0.2f;
 
-            if (_thrusterCharge > 0.3f && Input.GetKeyUp(KeyCode.LeftShift))
+            if (_thrusterCharge > 0.3f && !Input.GetKey(KeyCode.LeftShift))
             {
                 _thrusterDisable = false;
             }
@@ -200,7 +220,7 @@ public class Player : MonoBehaviour
             _thrusterCharge = 1f;
         }
 
-        _chargeBar.UpdateChargeBar(_thrusterCharge);
+        _chargeBar.UpdateChargeBar(_thrusterCharge,_speedDebuffed);
         _thruster.transform.localScale = _thrusterScale;
 
         return _speed;
@@ -257,6 +277,19 @@ public class Player : MonoBehaviour
     
     }
 
+    void FireMissile(){
+        if (_missileCount >0)
+        {   
+            _missileCount --; 
+            _UIManager.MissileUpdate(_missileCount);
+            if (Random.Range(0,2) == 0)
+            {
+                Instantiate(_missile,transform.position + new Vector3(-1f,-0.7f,0f),Quaternion.Euler(Vector3.forward*90f));
+            }else{
+                Instantiate(_missile,transform.position + new Vector3(1f,-0.7f,0f),Quaternion.Euler(Vector3.forward*-90f));
+            }            
+        }        
+    }
 
     void FireLaser()
     {
@@ -339,6 +372,11 @@ public class Player : MonoBehaviour
 
     }
 
+    IEnumerator SpeedDebufCountDown(){
+      _speedDebuffed = true;
+            yield return new WaitForSeconds(3f);
+        _speedDebuffed = false;
+    } 
     IEnumerator CameraShake() {
         float t = 0f;
         while (t < 0.5f)
@@ -377,7 +415,8 @@ public class Player : MonoBehaviour
         _UIManager.transform.GetComponent<UIManager>().ScoreUpDate(_score);
     }
 
-    //pickups
+            //pickups 
+    //buffs
     public void TripleShotCollected()
     {
         _tripleShotTimer = 0.0f;
@@ -421,10 +460,28 @@ public class Player : MonoBehaviour
         }
         
     }
+
+
     public void BigLaser(){
 
         StartCoroutine(BigLaserSeq());
     }
+    public void MissileCollected()
+    {
+        if (_missileCount<5)
+        {
+            _missileCount++;
+            _UIManager.MissileUpdate(_missileCount);
+        }
+        
+    }
+    //debuffs
+    public void SpeedDebuff(){
+        StartCoroutine(SpeedDebufCountDown());
+    }
+
+
+
 
     public void PauseGame(bool pause)
     {

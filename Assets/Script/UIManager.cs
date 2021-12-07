@@ -18,8 +18,12 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Image _roundPrefab;
     private Image[] _rounds = new Image[15];
+
+    
     [SerializeField]
     private Image[] _shellUI;
+    [SerializeField]
+    private Image[] _missileUI;
 
 
     [SerializeField]
@@ -31,7 +35,8 @@ public class UIManager : MonoBehaviour
 
     [SerializeField]
     private Text _WaveText;
-
+    [SerializeField]
+    private Text _introText;
     private GameManager _gameManager;
 
     // Start is called before the first frame update
@@ -41,6 +46,7 @@ public class UIManager : MonoBehaviour
         ScoreUpDate(0);
         LivesUpDate(3);
         GameOver(false);
+        _introText.enabled = true;
 
         _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         if (_gameManager == null)
@@ -49,19 +55,15 @@ public class UIManager : MonoBehaviour
 
         }
 
-        BlastShellUpdate(1);
     }
-
     void AmmoSetup() {
+        //spwaning not dynamic
         for (int i = 0; i < _rounds.Length; i++)
         {
             _rounds[i] = Instantiate(_roundPrefab, _ammo.transform.position + Vector3.right * i*20, Quaternion.identity);
-            //_rounds[i].transform.parent = _ammo.transform;
             _rounds[i].transform.SetParent(_ammo.transform,true);
         }
         AmmoUpDate(15);
-
-
     }
      void GameOver(bool end) {
         StartCoroutine(TextFlicker(end));
@@ -75,7 +77,6 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         _WaveText.enabled = false;
     }
-
     IEnumerator TextFlicker(bool end) 
     {
         while (end) {
@@ -89,7 +90,6 @@ public class UIManager : MonoBehaviour
         _GameOverText.gameObject.SetActive(false);
     }
 
-
     ///// Public Method ////
 
     public void ScoreUpDate( int score){
@@ -97,7 +97,6 @@ public class UIManager : MonoBehaviour
         _ScoreBoard.text = _text;
     
     }
-
     public void LivesUpDate(int lives)
     {
         _livesDisplay.sprite =_livesSprite[lives];
@@ -142,6 +141,7 @@ public class UIManager : MonoBehaviour
         }
     }
     public void BlastShellUpdate(int shells) {
+
         for (int i = 0; i < _shellUI.Length; i++)
         {
             if (i < shells)
@@ -151,24 +151,33 @@ public class UIManager : MonoBehaviour
             else
             {
                 _shellUI[i].enabled = false;
-
             }
         }
-    
     }
 
+    public void MissileUpdate(int missiles) {
+        for (int i = 0; i < _missileUI.Length; i++)
+        {
+            if (i < missiles)
+            {
+                _missileUI[i].enabled = true;
+            }
+            else
+            {
+                _missileUI[i].enabled = false;
+            }
+        }
+    }
     public void PauseMenu(bool isPaused)
     { 
         _menu.SetActive(isPaused);
         _gameManager.pauseGame(isPaused);
     }
-
-
     public void WaveText(int _wave){
-        Debug.Log("wave "+_wave + " " +Mathf.Ceil(_wave/10f) );
+        _introText.enabled = false;
+        // Debug.Log("wave "+_wave + " " +Mathf.Ceil(_wave/10f) );
         _WaveText.text = "Wave " + Mathf.Ceil((float)_wave/10f) + " - " + _wave%10;
         StartCoroutine(ShowWave());
-
     }
 
 

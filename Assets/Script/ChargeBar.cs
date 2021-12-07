@@ -10,6 +10,7 @@ public class ChargeBar : MonoBehaviour
 
     private Image _barFill;
    private Image _barFillThreshold;
+   private Image _barFillDisabled;
 
     private float _threshold = 0.3f;
 
@@ -25,6 +26,8 @@ public class ChargeBar : MonoBehaviour
     {
         _barFill = GameObject.Find("Bar").GetComponent<Image>();
         _barFillThreshold = GameObject.Find("BarThreshold").GetComponent<Image>();
+        _barFillDisabled = GameObject.Find("InactiveBar").GetComponent<Image>();
+
 
         if (_barFill == null)
         {
@@ -34,6 +37,11 @@ public class ChargeBar : MonoBehaviour
         if (_barFillThreshold == null)
         {
             Debug.LogError("barfill threshold is null");
+        }
+        
+        if (_barFillDisabled == null)
+        {
+            Debug.LogError("barfill disable is null");
         }
     }
 
@@ -66,9 +74,17 @@ public class ChargeBar : MonoBehaviour
 
     }
 
-    public void UpdateChargeBar(float _charge)
+    public void UpdateChargeBar(float _charge, bool _debuffed)
     {
+        if (_debuffed)
+        {
+        _barFillDisabled.enabled = true;
+        }
+        else 
+        {
+        _barFillDisabled.enabled = false;
         ResizeChargeBarFill(_charge);
         MoveChareBarTick(_charge);
+        }
     }
 }

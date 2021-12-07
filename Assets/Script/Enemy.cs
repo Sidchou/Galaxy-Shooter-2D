@@ -5,31 +5,126 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField]
-    private float _speed = 4;
+    private float _speed = 3;
     [SerializeField]
     private float _rotate = 0;
 
+    private bool _shielded = false;
+    [SerializeField]
+    private GameObject _shield;
+    [SerializeField]
+    private AudioClip _loseShieldAudioClip;
+ 
+    [SerializeField]
+    private GameObject _laserPrefab;
+
+    [SerializeField]
+    private AudioClip _laserAudioClip;
+    
     private Player _player;
  
     private Animator _animator;
     private bool _exploding = false;
 
-    private AudioSource _exlopsionAudio;
+    [SerializeField]
+    private AudioClip _explosionClip;  
+    private AudioSource _Audio;
 
     [SerializeField]
     private int _enemyID = 0;
+    /*
+    0 = astroid
+    1 = classic
+    2 = drop
+    3 = centipede
+    */
+    [SerializeField]
+    private int _special = 0;
+        /*
+    0 = none
+    1 = fire
+    2 = sheild
+    3 = follow
+    4 = zigzag
+    5 = turn around shoot
+    6 = dodge
+    */
+    [SerializeField]
+    private GameObject _astroidExplosion;
+
     
-
-
+    private SpawnManager _spawnManager;
 
     // Start is called before the first frame update
     void Start()
     {
         _player = GameObject.Find("Player").GetComponent<Player>();
         _animator = GetComponent<Animator>();
-        _exlopsionAudio = GetComponent<AudioSource>();
+        _Audio = GetComponent<AudioSource>();
+
 
         NullCheck();
+        InitID();
+    }
+
+    void InitID(){
+        switch (_enemyID)
+        {
+            case 0:
+                AsteroidInit();
+                break;
+            case 1:
+                InitType();
+                break;
+            case 2:
+                StartCoroutine(DropLaser());
+                break;
+            case 3:
+                break;
+            default:
+            break;
+        }
+
+    }
+
+    void InitType(){
+            switch (_special)
+            {   
+                case 0:
+                    break;
+                case 1:
+                    StartCoroutine(ShootLaser());
+                    break;
+                case 2:
+                    SetShield(true);
+                    break;
+                case 3:
+                    StartCoroutine(Follow());
+                    break;
+                case 4:
+                    StartCoroutine(Zigzag());
+                    break;
+                case 5:
+                    StartCoroutine(TurnAround());
+                    break;
+                case 6:
+                    StartCoroutine(Dodge());
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+    void AsteroidInit() {
+        if (_enemyID == 0)
+        {
+            _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+            if (_spawnManager == null)
+            {
+                Debug.LogError("spawn manager is null");
+            }
+        }
     }
 
     void NullCheck() {
@@ -37,11 +132,11 @@ public class Enemy : MonoBehaviour
         {
             Debug.LogError("player is null");
         }
-        if (_exlopsionAudio == null)
+        if (_Audio == null && _enemyID != 0)
         {
             Debug.LogError("audio source is Null");
         }
-        if (_animator == null)
+        if (_animator == null && _enemyID != 0)
         {
             Debug.LogError("animator is null");
         }
@@ -53,55 +148,61 @@ public class Enemy : MonoBehaviour
     {
      if (!_exploding)
      {
-         
      EnemyMovement();
      }
-             BottomEdge();
+        BottomEdge();
         SideEdge();
     }
 
     void EnemyMovement(){
         Vector3 _translation = Vector3.zero; 
+        Vector3 _rotation = Vector3.zero; 
+
 
 
         switch (_enemyID)
         {
             case 0:
-
-            break;
+                _rotation = Vector3.forward * _rotate* Time.deltaTime;
+                break;
             case 1:
-            _translation =Vector3.down*_speed*Time.deltaTime;
-            
-            break;
+                _translation =Vector3.down*_speed*Time.deltaTime;
+                break;
             case 2:
-            transform.Rotate(Vector3.forward*_rotate*Time.deltaTime,Space.Self);
+                _translation =Vector3.right*_speed*Time.deltaTime;
+                break;
+            case 3:
+                _rotation = Vector3.forward * _rotate* Time.deltaTime;
 
-            float _move = transform.localRotation.z+1f; 
-            _move = (_move + 0.5f)%2f -1f;
-            _move = Mathf.Pow(2*_move,2f);
-            _translation = Vector3.down*_speed*Time.deltaTime;
-            _translation.y -= _move*Time.deltaTime*2f;
+                float _move = transform.localRotation.z+1f; 
+                _move = (_move + 0.5f)%2f -1f;
+                _move = Mathf.Pow(2*_move,2f);
+                _translation = Vector3.down*_speed*Time.deltaTime;
+                _translation.y -= _move*Time.deltaTime*2f;
 
-            break;
+                break;
+
             default:
             break;
         }
 
+        transform.Rotate(_rotation, Space.Self);
         transform.Translate(_translation);
+
         BottomEdge();
         SideEdge();
     }
 
     void BottomEdge() {
         if (transform.position.y < -5) {
-            float _x = Random.Range(-8f, 8f);
+            // float _x = Random.Range(-8f, 8f);
             // transform.position = new Vector3(_x, 6, 0); //reset to top
             Destroy(gameObject);
         }
 
     }
 
-       void SideEdge() {
+    void SideEdge() {
         if (Mathf.Abs(transform.position.x) > 15) {
             Destroy(gameObject);
         }
@@ -121,20 +222,34 @@ public class Enemy : MonoBehaviour
             }
 
             if (other.tag == "Blast") {
-                ExplosionAnimation();
+                BlastCollision(other);
+            }
+            if (other.tag == "Token") {
+                Destroy(other.gameObject);
             }
         }
     }
     private void PlayerCollision(Collider2D other){
-        Player player = other.transform.GetComponent<Player>();
-        if(player!= null){
-            player.TakeDamage();
+        if(_player!= null){
+            _player.TakeDamage();
         }
         ExplosionAnimation();
     }
     private void LaserCollision(Collider2D other){
         Destroy(other.gameObject);
-
+        if (_shielded)
+        {
+            SetShield(false);
+            
+        }else{
+        if (_player)
+        {
+            _player.UpdateScore(10);
+        }
+        ExplosionAnimation();
+        }
+    }
+    private void BlastCollision(Collider2D other){
         if (_player)
         {
             _player.UpdateScore(10);
@@ -145,12 +260,146 @@ public class Enemy : MonoBehaviour
     private void ExplosionAnimation()
     {
         _exploding = true;
-        _exlopsionAudio.Play();
+        if (_enemyID == 1) {
+        _Audio.clip = _explosionClip;
+        _Audio.Play();
         _animator.SetTrigger("EnemyDestroyed");
-        _speed = 0; 
-
         Destroy(this.gameObject, 2.5f);
+        } else {
+            GameObject _explode = Instantiate(_astroidExplosion, transform.position, Quaternion.identity);
+            switch (_enemyID)
+            {   
+                case 1:
+                    _spawnManager.StartSpawning();
+                    break;
+                case 3:
+                    _explode.transform.localScale = Vector3.one*0.25f;
+                    break;
+                default:
+                   break;
+            }
+            Destroy(gameObject,0.2f);
+        } 
     }
 
+    private void SetShield(bool sheild) {
+            _shielded = sheild;
+            _shield.SetActive(sheild);
+            if (!sheild) {
+                _Audio.clip = _loseShieldAudioClip;
+                _Audio.Play();
+                
+            }
+    }
 
+    IEnumerator ShootLaser(){
+        float _laserTime = 2f;
+        _Audio.clip = _laserAudioClip;
+
+
+        while(!_exploding){
+        GameObject _laser = Instantiate(_laserPrefab, transform.position, transform.rotation);
+        _Audio.Play();
+        yield return new WaitForSeconds(_laserTime);
+        
+        }
+    }
+    IEnumerator Follow(){
+        bool follow = true;
+        while(follow && !_exploding){
+            follow = Mathf.Abs(transform.localRotation.z) < 0.5f;
+            if (_player != null)
+            {
+            Vector3 _dir = _player.transform.position - transform.position;
+            float _dist = Vector3.Magnitude(_dir);
+            float angle = Vector3.Angle(_dir,transform.right);
+            angle-=90f;
+            Vector3 _turn =new Vector3( 0f, 0f, -1f / _dist * Mathf.Sign(angle) * Mathf.Pow(Mathf.Abs(angle),0.5f));                            
+            transform.Rotate(_turn,Space.Self);
+            transform.Translate(Vector3.down/_dist);
+            yield return new WaitForSeconds(0.05f);
+            }
+        }
+    }
+    IEnumerator Zigzag() { 
+        while(!_exploding) {
+            float _randomAngle = Random.Range(0,360f);
+            if (_randomAngle > 90 && _randomAngle < 270) {
+                if (transform.position.y > 8f || Random.Range(0,1f) < 0.5f) {
+                    _randomAngle += 180;
+                }
+            }
+            Quaternion _turn = Quaternion.identity;
+            _turn.eulerAngles = new Vector3(0,0,_randomAngle);
+            transform.rotation = _turn;
+            yield return new WaitForSeconds(1.5f);
+        }
+    }   
+
+    IEnumerator TurnAround() {
+        bool _pass = true;
+        while(_pass) {
+            if (_player != null) {
+            _pass = transform.position.y > _player.transform.position.y;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+        if (_player != null) {
+            if (transform.position.x > _player.transform.position.x) {
+                transform.Rotate(Vector3.forward*-90,Space.Self);
+            } else {
+                transform.Rotate(Vector3.forward*90,Space.Self);
+            }
+        }
+        StartCoroutine(ShootLaser());
+        
+        while(!_exploding) {
+            if (_player != null) {
+            Vector3 _dir = _player.transform.position - transform.position;
+            float angle = Vector3.Angle(_dir,transform.right);
+            angle-=90f;
+            Vector3 _turn =new Vector3( 0f, 0f, -1f / Mathf.Sign(angle) * Mathf.Pow(Mathf.Abs(angle),0.5f));                            
+            transform.Rotate(_turn,Space.Self);
+            yield return new WaitForSeconds(0.05f);
+            }
+        }
+    }
+    
+    IEnumerator Dodge(){
+        while(!_exploding){
+            Vector2 _origin  = new Vector2 (transform.position.x,transform.position.y-1.5f);
+            Vector2 _size = new Vector2(1f,1f);
+            Vector2 _dir = Vector2.down;
+            RaycastHit2D hit = Physics2D.BoxCast(_origin,_size,0,_dir);
+            if (hit.collider != null)
+            {
+                if (hit.transform.tag == "Laser")
+                {
+                    float _dif = hit.transform.position.x - transform.position.x ;
+                    if (Mathf.Abs(_dif) > 0.25f)
+                    {
+                        for (int i = 0; i < 10; i++)
+                        {
+                            float _dodge = 3f * Mathf.Sign(_dif); 
+                            transform.Translate(Vector3.left * _dodge * Time.deltaTime);
+                            yield return new WaitForEndOfFrame();
+                        }
+                            
+                    }
+                }
+            }
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    IEnumerator DropLaser(){
+        float _laserTime = 1f;
+        while(!_exploding){
+        GameObject _laser = Instantiate(_laserPrefab, transform.position + new Vector3(0.25f,-0.4f,0), _laserPrefab.transform.rotation);
+        // _laser.transform.rotation = Quaternion.Euler(Vector3.);
+        _Audio.Play();
+        yield return new WaitForSeconds(_laserTime);
+        }
+    }
 }

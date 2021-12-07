@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
+
     [SerializeField]
     private GameObject[] _enemyPrefab;
     [SerializeField]
@@ -18,15 +19,14 @@ public class SpawnManager : MonoBehaviour
     4 = blast shell
     5 = big laser
     */
-        [SerializeField]
-    private GameObject _laserRounds;
-    [SerializeField]
-    private GameObject _blast;
 
+    bool _stopSpawning = true;
+
+    
     private int _wave = 0;
-    int _enemCount = 0;
-
-
+    private int _enemCount = 0;
+    private int _enemyPerWave = 10;
+    private float _enemySpawnTime = 5f;
     private UIManager _UIManager;
 
     // private bool _stopSpawning = false;
@@ -53,30 +53,38 @@ public class SpawnManager : MonoBehaviour
         yield return new WaitForSeconds(4.0f);
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
 
-        bool _stopSpawning = _wave%10 == 0;
+
         while(!_stopSpawning){
             _spawnPosition.x = Random.Range(-10f,10f);
             GameObject newEnemy = Instantiate(_enemyPrefab[0],_spawnPosition,Quaternion.identity);
             newEnemy.transform.parent = _enemyContainer.transform;
  
-            yield return new WaitForSeconds(4.0f);
             _enemCount ++;
-            if (_enemCount >10)
+
+            yield return new WaitForSeconds(4.0f);
+            
+
+            if (_enemCount > _enemyPerWave)
             {
                 _enemCount = 0 ;
                 _wave++;
+                _enemyPerWave++;
+                _UIManager.WaveText(_wave);
+                _enemySpawnTime-=0.2f;
+                _enemySpawnTime = Mathf.Max(_enemySpawnTime,1.5f);
+
             yield return new WaitForSeconds(4.0f);
             } //nextwave
 
-            if(_wave == 5){
+            if(_wave%10 == 5){
             StartCoroutine(Enemy2SpawnRoutine());
-
             }
+
         }
     }
 
-        IEnumerator Enemy2SpawnRoutine(){
-            yield return new WaitForSeconds(4.0f);
+    IEnumerator Enemy2SpawnRoutine(){
+            yield return new WaitForSeconds(6.0f);
             Vector3 _spawnPosition = new Vector3(-10, 0, 0);
             _spawnPosition.y = Random.Range(-0f,4f);
             int _count = 0;
@@ -90,10 +98,10 @@ public class SpawnManager : MonoBehaviour
         }
     IEnumerator PowerupSpawnRoutine()
     {
-        yield return new WaitForSeconds(6.0f);
+        yield return new WaitForSeconds(8.0f);
 
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
-        while (_wave > 0)
+        while (!_stopSpawning)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
             int _randomizedID = Random.Range(0,4);
@@ -105,10 +113,10 @@ public class SpawnManager : MonoBehaviour
 
     IEnumerator LaserRoundsRoutine() 
     {
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(6.0f);
 
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
-        while (_wave > 0)
+        while (!_stopSpawning)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
             GameObject newToken = Instantiate(_powerup[3], _spawnPosition, Quaternion.identity);
@@ -124,7 +132,7 @@ public class SpawnManager : MonoBehaviour
         yield return new WaitForSeconds(10.0f);
         int _randomizedID = Random.Range(4,6);
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
-        while (_wave > 0)
+        while (!_stopSpawning)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
             GameObject newToken = Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity);
@@ -138,10 +146,13 @@ public class SpawnManager : MonoBehaviour
     ///// public methods /////
 
     public void OnPlayerDeath(){
+        _stopSpawning = true;
         _wave = 0;
+
     }
 
     public void StartSpawning() {
+        _stopSpawning = false;
         _wave = 1;
         _UIManager.WaveText(_wave);
         StartCoroutine(EnemySpawnRoutine());
@@ -151,7 +162,6 @@ public class SpawnManager : MonoBehaviour
     }
 
 public void Test(){
-
     StartCoroutine(Enemy2SpawnRoutine());
 }
 

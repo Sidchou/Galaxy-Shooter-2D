@@ -29,7 +29,24 @@ public class GameManager : MonoBehaviour
         }
 
     }
-
+    private void ClearScreen(){
+        GameObject[] collection;
+        collection = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject item in collection)
+        {
+            Destroy(item);
+        }
+        collection = GameObject.FindGameObjectsWithTag("Laser");
+        foreach (GameObject item in collection)
+        {
+            Destroy(item);
+        }
+        collection = GameObject.FindGameObjectsWithTag("Laser");
+        foreach (GameObject item in collection)
+        {
+            Destroy(item);
+        }
+    }
 
     public void pauseGame(bool pauseGame)
     {
@@ -44,6 +61,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver() {
         _isGameOver = true;
+        ClearScreen();
     }
 
 
