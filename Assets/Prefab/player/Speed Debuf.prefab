@@ -139,3 +139,5 @@ MonoBehaviour:
   powerupID: 0
   _pickupAudio: {fileID: 8300000, guid: b59bd5fa22d34450c8de4a4247f38272, type: 3}
   _audioVolume: 0.75
+  _explosionPrefab: {fileID: 3299960696352105019, guid: 176f3f0837f5ca34692fcde41149bda7,
+    type: 3}

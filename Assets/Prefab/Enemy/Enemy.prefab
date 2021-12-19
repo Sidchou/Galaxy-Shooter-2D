@@ -158,10 +158,12 @@ MonoBehaviour:
     type: 3}
   _laserPrefab: {fileID: 2557453467692655693, guid: f1b2df904edf44d1aa2692a0c439ff1b,
     type: 3}
-  _laserAudioClip: {fileID: 8300000, guid: 75676f361bdfeaf41a46623e95df3dbc, type: 3}
+  _laserAudioClip: {fileID: 8300000, guid: 532f3c012aaa14e2c86c6953cd30624c, type: 3}
   _explosionClip: {fileID: 8300000, guid: a885c043fab7e46438bba03ba9dab6bc, type: 3}
   _enemyID: 1
-  _special: 4
+  _special: 0
+  _astroidExplosion: {fileID: 0}
+  _drop: {fileID: 3336376247020507165, guid: 99fa0b18d67c9694b9343cee7a682f2d, type: 3}
 --- !u!212 &8077552475325059737
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -392,7 +394,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2146882329475583604
 Transform:
   m_ObjectHideFlags: 0
@@ -449,7 +451,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 333b0196b7a764df5a7768ead9b69dbc, type: 3}
-  m_Color: {r: 1, g: 0, b: 0.21773195, a: 0.58431375}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.58431375}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -175,8 +175,12 @@ public class UIManager : MonoBehaviour
     }
     public void WaveText(int _wave){
         _introText.enabled = false;
-        // Debug.Log("wave "+_wave + " " +Mathf.Ceil(_wave/10f) );
+        if (_wave == 10)
+        {
+            _WaveText.text = " BOSS ";
+        } else {
         _WaveText.text = "Wave " + Mathf.Ceil((float)_wave/10f) + " - " + _wave%10;
+        }
         StartCoroutine(ShowWave());
     }
 

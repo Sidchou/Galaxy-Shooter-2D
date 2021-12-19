@@ -4,14 +4,7 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-  
-    [SerializeField]
-    private GameObject _getSounds;
-    private AudioSource _sounds;
 
-    
-
-    private float _musicVolume;
     private float _soundVolume;
     private bool _mute = false;
 
@@ -20,11 +13,7 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
 
-        _sounds = _getSounds.GetComponent<AudioSource>();
-        if (_sounds == null)
-        {
-            Debug.LogError("sound list is null");
-        }
+        AdjustVolume(0.75f);
 
 
     }
@@ -36,11 +25,38 @@ public class AudioManager : MonoBehaviour
     }
     public void AdjustVolume(float val)
     {
-        _sounds.volume = val;
-    }
- 
-    public void Mute()
-    {
+        _soundVolume = val;
+        AudioSource[] _audioSource = GameObject.FindObjectsOfType(typeof(AudioSource)) as AudioSource[];
 
+        foreach (AudioSource item in _audioSource)
+        {
+            if (item.name != "Background Audio")
+            {
+                item.volume = val;
+            }
+        }
+
+    }
+
+
+
+    public void Mute(bool _muted)
+    {
+        _mute = _muted;
+        AudioSource[] _audioSource = GameObject.FindObjectsOfType(typeof(AudioSource)) as AudioSource[];
+
+        foreach (AudioSource item in _audioSource)
+        {
+            item.mute = _muted;
+        }
+    }
+
+    public float GetVolume()
+    {
+        return _soundVolume;
+    }
+    public bool GetMuted()
+    {
+        return _mute;
     }
 }

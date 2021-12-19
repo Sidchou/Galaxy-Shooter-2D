@@ -11,29 +11,60 @@ public class SpawnManager : MonoBehaviour
     private GameObject _enemyContainer;
     [SerializeField]
     private GameObject[] _powerup;
-        /*
-    0 = triple shot 
-    1 = speed
-    2 = sheild 
-    3 = ammo
-    4 = blast shell
-    5 = big laser
-    */
+    /*
+0 = triple shot 
+1 = speed
+2 = sheild 
+3 = ammo
+4 = blast shell
+5 = big laser
+6 = missile
+*/
 
     bool _stopSpawning = true;
 
-    
-    private int _wave = 0;
-    private int _enemCount = 0;
-    private int _enemyPerWave = 10;
-    private float _enemySpawnTime = 5f;
+    private int _wave = 8;
+
+    private float _enemySpawnTime = 3f;
     private UIManager _UIManager;
+
+
+    private int[] waves;
+    private int[] _enenmy2 = { 3, 6, 9 };
+    private int[] _enenmy3 = { 4, 9 };
+    /*
+    0 = none
+    1 = fire
+    2 = sheild
+    3 = follow
+    4 = zigzag
+    5 = turn around shoot
+    6 = dodge
+
+
+    0,0,0,0,0
+    0,1,0,1,0,1,0   
+    1,0,1,2,1,2,1,0,1   #
+    1,2,3,2,1,2,1,2,3,2,1    *
+    2,1,3,2,1,4,4,1,2,3,1,2         
+    1,2,5,2,1,5,4,5,1,2,5,2,1  #
+    1,6,5,2,6,5,4,4,5,6,2,5,6,1   
+    2,1,5,6,4,6,1,5,1,6,4,6,5,1,2  
+    4,2,5,6,5,6,2,5,2,6,5,6,5,2,4   #  *
+    boss
+
+
+    */
+    [SerializeField]
+    private GameObject _boss;
+
+
 
     // private bool _stopSpawning = false;
     // Start is called before the first frame update
     void Start()
     {
-      
+
         _UIManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         if (_UIManager == null)
         {
@@ -41,61 +72,111 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
+    void SetWaveEnemies(int _waveNum)
+    {
+        switch (_waveNum)
+        {
+            case 1:
+                waves = new int[] { 1, 2, 0, 0, 0 };
+                break;
+            case 2:
+                waves = new int[] { 0, 1, 0, 1, 0, 1, 0 };
+                break;
+            case 3:
+                waves = new int[] { 1, 0, 1, 2, 1, 2, 1, 0, 1 };
+                break;
+            case 4:
+                waves = new int[] { 1, 2, 3, 2, 1, 2, 1, 2, 3, 2, 1 };
+                break;
+            case 5:
+                waves = new int[] { 2, 1, 3, 2, 1, 4, 4, 1, 2, 3, 1, 2 };
+                break;
+            case 6:
+                waves = new int[] { 1, 2, 5, 2, 1, 5, 4, 5, 1, 2, 5, 2, 1 };
+                break;
+            case 7:
+                waves = new int[] { 1, 6, 5, 2, 6, 5, 4, 4, 5, 6, 2, 5, 6, 1 };
+                break;
+            case 8:
+                waves = new int[] { 2, 1, 5, 6, 4, 6, 1, 5, 1, 6, 4, 6, 5, 1, 2 };
+                break;
+            case 9:
+                waves = new int[] { 4, 2, 5, 6, 5, 6, 2, 5, 2, 6, 5, 6, 5, 2, 4 };
+                break;
+            case 10:
+                waves = new int[] { };
+                break;
+            default:
+                break;
+        }
+
+    }
+
     // Update is called once per frame
     void Update()
     {
-        
+
     }
+    private void SpecialSpawn(int n)
+    {
+        Vector3 _spawnPosition = new Vector3(-10, 0, 0);
+        _spawnPosition.y = Random.Range(2f, 6f);
+        if (_wave % 3 == 0 && Mathf.Floor(waves.Length / 3) == n)
+        {
+            Instantiate(_enemyPrefab[1], _spawnPosition, Quaternion.identity, _enemyContainer.transform);
+        }
+        if (_wave % 5 == 4 && Mathf.Floor(waves.Length / 2) == n)
+        {
+            StartCoroutine(Enemy3SpawnRoutine());
+        }
+    }
+
 
     ///// coroutine /////
 
-    IEnumerator EnemySpawnRoutine(){
+    IEnumerator EnemySpawnRoutine()
+    {
         yield return new WaitForSeconds(4.0f);
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
+        int _enemCount = 0;
 
+        Debug.Log("wave " + _wave + " | (" + waves.Length + ")");
+        while (!_stopSpawning && _enemCount < waves.Length)
+        {
+            _spawnPosition.x = Random.Range(-10f, 10f);
 
-        while(!_stopSpawning){
-            _spawnPosition.x = Random.Range(-10f,10f);
-            GameObject newEnemy = Instantiate(_enemyPrefab[0],_spawnPosition,Quaternion.identity);
+            GameObject _newEnemy = Instantiate(_enemyPrefab[0], _spawnPosition, Quaternion.identity, _enemyContainer.transform);
+            Enemy _EnemyType = _newEnemy.GetComponent<Enemy>();
+            _EnemyType.SetType(waves[_enemCount]);
+
+            SpecialSpawn(_enemCount);
+
+            yield return new WaitForSeconds(_enemySpawnTime);
+            _enemCount++;
+
+        }
+        //next wave
+        yield return new WaitForSeconds(3.0f);
+        StartSpawning(_wave);
+        Debug.Log("end");
+        _enemySpawnTime = Mathf.Max(3f - _wave * 0.2f, 1f);
+    }
+
+    IEnumerator Enemy3SpawnRoutine()
+    {
+        Vector3 _spawnPosition = new Vector3(-10, 0, 0);
+        _spawnPosition.y = Random.Range(2f, 6f);
+        int _count = 0;
+        while (_count < 3)
+        {
+            GameObject newEnemy = Instantiate(_enemyPrefab[2], _spawnPosition, Quaternion.identity);
             newEnemy.transform.parent = _enemyContainer.transform;
- 
-            _enemCount ++;
-
-            yield return new WaitForSeconds(4.0f);
-            
-
-            if (_enemCount > _enemyPerWave)
-            {
-                _enemCount = 0 ;
-                _wave++;
-                _enemyPerWave++;
-                _UIManager.WaveText(_wave);
-                _enemySpawnTime-=0.2f;
-                _enemySpawnTime = Mathf.Max(_enemySpawnTime,1.5f);
-
-            yield return new WaitForSeconds(4.0f);
-            } //nextwave
-
-            if(_wave%10 == 5){
-            StartCoroutine(Enemy2SpawnRoutine());
-            }
-
+            _count++;
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
-    IEnumerator Enemy2SpawnRoutine(){
-            yield return new WaitForSeconds(6.0f);
-            Vector3 _spawnPosition = new Vector3(-10, 0, 0);
-            _spawnPosition.y = Random.Range(-0f,4f);
-            int _count = 0;
-            while(_count < 10){
 
-                GameObject newEnemy = Instantiate(_enemyPrefab[1],_spawnPosition,Quaternion.identity);
-                newEnemy.transform.parent = _enemyContainer.transform;
-                _count ++; 
-                yield return new WaitForSeconds(0.05f);
-            }
-        }
     IEnumerator PowerupSpawnRoutine()
     {
         yield return new WaitForSeconds(8.0f);
@@ -104,66 +185,59 @@ public class SpawnManager : MonoBehaviour
         while (!_stopSpawning)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
-            int _randomizedID = Random.Range(0,4);
-            GameObject newToken = Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity);
-            newToken.transform.parent = gameObject.transform;
-            yield return new WaitForSeconds(Random.Range(3f, 7f));
+            int _randomizedID;
+            float _rng = Random.Range(0f, 1f);
+            if (_rng < 0.1)
+            {
+                _randomizedID = Random.Range(4, 7);
+            }
+            else if (_rng < 0.3)
+            {
+                _randomizedID = 3;
+            }
+            else
+            {
+                _randomizedID = Random.Range(0, 3);
+            }
+            Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity, gameObject.transform);
+            yield return new WaitForSeconds(Random.Range(6f, 10f));
         }
     }
 
-    IEnumerator LaserRoundsRoutine() 
-    {
-        yield return new WaitForSeconds(6.0f);
-
-        Vector3 _spawnPosition = new Vector3(0, 6, 0);
-        while (!_stopSpawning)
-        {
-            _spawnPosition.x = Random.Range(-10f, 10f);
-            GameObject newToken = Instantiate(_powerup[3], _spawnPosition, Quaternion.identity);
-            newToken.transform.parent = gameObject.transform;
-            yield return new WaitForSeconds(Random.Range(4f, 6f));
-        }
-
-
-    }
-
-    IEnumerator SecondarySpawnRoutine()
-    {
-        yield return new WaitForSeconds(10.0f);
-        int _randomizedID = Random.Range(4,6);
-        Vector3 _spawnPosition = new Vector3(0, 6, 0);
-        while (!_stopSpawning)
-        {
-            _spawnPosition.x = Random.Range(-10f, 10f);
-            GameObject newToken = Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity);
-            newToken.transform.parent = gameObject.transform;
-            yield return new WaitForSeconds(Random.Range(20f, 40f));
-        }
-
-
-    }
 
     ///// public methods /////
 
-    public void OnPlayerDeath(){
+    public void OnPlayerDeath()
+    {
         _stopSpawning = true;
-        _wave = 0;
-
     }
 
-    public void StartSpawning() {
-        _stopSpawning = false;
-        _wave = 1;
+    public void StartSpawning(int _waveNum)
+    {
+        // _wave = _waveNum + 1;
+        _wave = 10; //
+        SetWaveEnemies(_wave);
         _UIManager.WaveText(_wave);
-        StartCoroutine(EnemySpawnRoutine());
-        StartCoroutine(PowerupSpawnRoutine());
-        StartCoroutine(LaserRoundsRoutine());
-        StartCoroutine(SecondarySpawnRoutine());
+
+        if (_stopSpawning == true)
+        {
+            _stopSpawning = false;
+            StartCoroutine(PowerupSpawnRoutine());
+        }
+        if (_wave != 10)
+        {
+            StartCoroutine(EnemySpawnRoutine());
+        }
+        else
+        {
+            _boss.SetActive(true);
+        }
     }
 
-public void Test(){
-    StartCoroutine(Enemy2SpawnRoutine());
-}
+    public void Test()
+    {
+        StartCoroutine(Enemy3SpawnRoutine());
+    }
 
 
 }

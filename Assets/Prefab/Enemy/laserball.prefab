@@ -135,4 +135,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 7
-  _enemyLaser: 0
+  _enemyLaser: 1

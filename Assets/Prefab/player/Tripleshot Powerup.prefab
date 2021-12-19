@@ -140,6 +140,8 @@ MonoBehaviour:
   powerupID: 0
   _pickupAudio: {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
   _audioVolume: 0.75
+  _explosionPrefab: {fileID: 3299960696352105019, guid: 176f3f0837f5ca34692fcde41149bda7,
+    type: 3}
 --- !u!95 &8822195886152562744
 Animator:
   serializedVersion: 3

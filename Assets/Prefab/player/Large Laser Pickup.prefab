@@ -102,6 +102,8 @@ MonoBehaviour:
   powerupID: 5
   _pickupAudio: {fileID: 8300000, guid: 5ee343246919d2b4bba63ae629e95494, type: 3}
   _audioVolume: 0.75
+  _explosionPrefab: {fileID: 3299960696352105019, guid: 176f3f0837f5ca34692fcde41149bda7,
+    type: 3}
 --- !u!50 &3264687995002977697
 Rigidbody2D:
   serializedVersion: 4

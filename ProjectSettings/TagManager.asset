@@ -8,6 +8,8 @@ TagManager:
   - Enemy
   - Blast
   - Token
+  - Boss
+  - LargeLaser
   layers:
   - Default
   - TransparentFX
