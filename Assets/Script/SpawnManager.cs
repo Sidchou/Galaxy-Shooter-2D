@@ -41,7 +41,6 @@ public class SpawnManager : MonoBehaviour
     5 = turn around shoot
     6 = dodge
 
-
     0,0,0,0,0
     0,1,0,1,0,1,0   
     1,0,1,2,1,2,1,0,1   #
@@ -52,8 +51,6 @@ public class SpawnManager : MonoBehaviour
     2,1,5,6,4,6,1,5,1,6,4,6,5,1,2  
     4,2,5,6,5,6,2,5,2,6,5,6,5,2,4   #  *
     boss
-
-
     */
     [SerializeField]
     private GameObject _boss;

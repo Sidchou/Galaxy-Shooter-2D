@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2677840721941247302}
   - component: {fileID: 2677840721941247303}
   m_Layer: 0
-  m_Name: Enemy 2
+  m_Name: Enemy 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -105,11 +105,12 @@ MonoBehaviour:
   _loseShieldAudioClip: {fileID: 0}
   _laserPrefab: {fileID: 0}
   _laserAudioClip: {fileID: 0}
-  _explosionClip: {fileID: 0}
+  _explosionClip: {fileID: 8300000, guid: a885c043fab7e46438bba03ba9dab6bc, type: 3}
   _enemyID: 3
   _special: 0
   _astroidExplosion: {fileID: 3299960696352105019, guid: 176f3f0837f5ca34692fcde41149bda7,
     type: 3}
+  _drop: {fileID: 0}
 --- !u!95 &2677840721941247304
 Animator:
   serializedVersion: 3

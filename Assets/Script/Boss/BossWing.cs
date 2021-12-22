@@ -49,11 +49,7 @@ public class BossWing : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X) == true)
-        {
-            TakeDamage(50);
-            Destroyed();
-        }
+
     }
 
     void ShotFX(Vector3 _pos)

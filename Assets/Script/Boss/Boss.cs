@@ -82,10 +82,6 @@ public class Boss : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z) == true)
-        {
-            UpdateHealth(100);
-        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
