@@ -19,8 +19,10 @@ public class SpawnManager : MonoBehaviour
 4 = blast shell
 5 = big laser
 6 = missile
+7 = life up
 */
-
+    [SerializeField]
+    private GameObject[] _negPowerup;
     bool _stopSpawning = true;
 
     private int _wave = 8;
@@ -30,8 +32,6 @@ public class SpawnManager : MonoBehaviour
 
 
     private int[] waves;
-    private int[] _enenmy2 = { 3, 6, 9 };
-    private int[] _enenmy3 = { 4, 9 };
     /*
     0 = none
     1 = fire
@@ -77,7 +77,7 @@ public class SpawnManager : MonoBehaviour
         switch (_waveNum)
         {
             case 1:
-                waves = new int[] { 1, 2, 0, 0, 0 };
+                waves = new int[] { 0, 0, 0, 0, 0 };
                 break;
             case 2:
                 waves = new int[] { 0, 1, 0, 1, 0, 1, 0 };
@@ -140,7 +140,7 @@ public class SpawnManager : MonoBehaviour
         Vector3 _spawnPosition = new Vector3(0, 6, 0);
         int _enemCount = 0;
 
-        Debug.Log("wave " + _wave + " | (" + waves.Length + ")");
+        // Debug.Log("wave " + _wave + " | (" + waves.Length + ")");
         while (!_stopSpawning && _enemCount < waves.Length)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
@@ -158,7 +158,6 @@ public class SpawnManager : MonoBehaviour
         //next wave
         yield return new WaitForSeconds(3.0f);
         StartSpawning(_wave);
-        Debug.Log("end");
         _enemySpawnTime = Mathf.Max(3f - _wave * 0.2f, 1f);
     }
 
@@ -167,7 +166,7 @@ public class SpawnManager : MonoBehaviour
         Vector3 _spawnPosition = new Vector3(-10, 0, 0);
         _spawnPosition.y = Random.Range(2f, 6f);
         int _count = 0;
-        while (_count < 3)
+        while (_count < 10)
         {
             GameObject newEnemy = Instantiate(_enemyPrefab[2], _spawnPosition, Quaternion.identity);
             newEnemy.transform.parent = _enemyContainer.transform;
@@ -185,21 +184,38 @@ public class SpawnManager : MonoBehaviour
         while (!_stopSpawning)
         {
             _spawnPosition.x = Random.Range(-10f, 10f);
+            bool negativeSpawn = false;
             int _randomizedID;
             float _rng = Random.Range(0f, 1f);
             if (_rng < 0.1)
             {
-                _randomizedID = Random.Range(4, 7);
+                _randomizedID = Random.Range(0, _negPowerup.Length);
+                negativeSpawn = true;
+            }
+            else if (_rng < 0.2)
+            {
+                _randomizedID = 7; // 1up
             }
             else if (_rng < 0.3)
             {
-                _randomizedID = 3;
+                _randomizedID = 5; //large laser
+            }
+            else if (_rng < 0.5)
+            {
+                _randomizedID = 3; //ammo
             }
             else
             {
-                _randomizedID = Random.Range(0, 3);
+                _randomizedID = Random.Range(0, 3); //powerup
             }
-            Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity, gameObject.transform);
+            if (negativeSpawn)
+            {
+                Instantiate(_negPowerup[_randomizedID], _spawnPosition, Quaternion.identity, gameObject.transform);
+            }
+            else
+            {
+                Instantiate(_powerup[_randomizedID], _spawnPosition, Quaternion.identity, gameObject.transform);
+            }
             yield return new WaitForSeconds(Random.Range(6f, 10f));
         }
     }
@@ -214,8 +230,8 @@ public class SpawnManager : MonoBehaviour
 
     public void StartSpawning(int _waveNum)
     {
-        // _wave = _waveNum + 1;
-        _wave = 10; //
+        _wave = _waveNum + 1;
+        // _wave = 10; // boss test
         SetWaveEnemies(_wave);
         _UIManager.WaveText(_wave);
 

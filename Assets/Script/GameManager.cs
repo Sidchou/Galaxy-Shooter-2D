@@ -16,20 +16,17 @@ public class GameManager : MonoBehaviour
         if (_isGameOver)
         {
 
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.Escape))
             {
                 SceneManager.LoadScene(1);
                 _isGameOver = false;
-            }
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                SceneManager.LoadScene(0);
             }
 
         }
 
     }
-    private void ClearScreen(){
+    private void ClearScreen()
+    {
         GameObject[] collection;
         collection = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject item in collection)
@@ -51,15 +48,18 @@ public class GameManager : MonoBehaviour
     public void pauseGame(bool pauseGame)
     {
         Time.timeScale = pauseGame ? 0 : 1;
-        
+
     }
-    public void quitGame() {
-        Application.Quit();
-    
+    public void quitGame()
+    {
+        // Application.Quit();  // for desktop
+        SceneManager.LoadScene(0);
+
     }
 
 
-    public void GameOver() {
+    public void GameOver()
+    {
         _isGameOver = true;
         ClearScreen();
     }

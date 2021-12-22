@@ -21,6 +21,7 @@ public class Boss : MonoBehaviour
     [SerializeField]
     private BossUI _healthDisplay;
     private bool _takingDamage = false;
+    private bool _largeLaserHit = false;
 
     [SerializeField]
     private AudioClip _laserAudioClip;
@@ -28,6 +29,7 @@ public class Boss : MonoBehaviour
     private AudioClip _explodeAudioClip;
     private AudioSource _audioSource;
     private AudioManager _audioManager;
+    private UIManager _UIManager;
 
 
     Player _player;
@@ -37,7 +39,18 @@ public class Boss : MonoBehaviour
         _audioManager = GameObject.Find("Audio Manager").GetComponent<AudioManager>();
         _player = GameObject.Find("Player").GetComponent<Player>();
         _audioSource = GetComponent<AudioSource>();
+        _UIManager = GameObject.Find("Canvas").GetComponent<UIManager>();
 
+        NullCheck();
+
+        _audioSource.volume = _audioManager.GetVolume();
+        _audioSource.mute = _audioManager.GetMuted();
+
+        transform.position = Vector3.up * 14f;
+        StartCoroutine(EnterSequence());
+    }
+    void NullCheck()
+    {
 
         if (_audioManager == null)
         {
@@ -51,6 +64,10 @@ public class Boss : MonoBehaviour
         {
             Debug.LogError("audio source is null");
         }
+        if (_UIManager == null)
+        {
+            Debug.LogError("UI Manager is null");
+        }
 
         _wings = GetComponentsInChildren<BossWing>();
         foreach (var item in _wings)
@@ -60,18 +77,11 @@ public class Boss : MonoBehaviour
                 Debug.LogError("wing is null");
             }
         }
-
-        _audioSource.volume = _audioManager.GetVolume();
-        _audioSource.mute = _audioManager.GetMuted();
-
-        transform.position = Vector3.up * 14f;
-        StartCoroutine(EnterSequence());
     }
 
     // Update is called once per frame
     void Update()
     {
-
         if (Input.GetKeyDown(KeyCode.Z) == true)
         {
             UpdateHealth(100);
@@ -86,19 +96,29 @@ public class Boss : MonoBehaviour
             {
                 Destroy(other);
                 UpdateHealth(10);
+                ShotFX(transform.position);
 
             }
             if (other.tag == "Blast")
             {
                 UpdateHealth(20);
             }
+            if (other.tag == "LargeLaser")
+            {
+                StartCoroutine(LargeLaserDamage());
+            }
+            if (other.tag == "Player")
+            {
+                UpdateHealth(5);
+            }
         }
+
+
         if (other.tag == "Player")
         {
             Player _player = other.GetComponent<Player>();
             if (_player != null)
             {
-                UpdateHealth(5);
                 _player.TakeDamage();
             }
         }
@@ -110,7 +130,28 @@ public class Boss : MonoBehaviour
     {
         if (other.tag == "LargeLaser")
         {
-            UpdateHealth(1);
+            _largeLaserHit = true;
+        }
+        else
+        {
+            _largeLaserHit = false;
+        }
+    }
+
+    void ShotFX(Vector3 _pos)
+    {
+        ExplodeAudio();
+        GameObject _exp = Instantiate(_explosion, _pos, Quaternion.identity, gameObject.transform);
+        _exp.transform.localScale = Vector3.one * 0.1f;
+    }
+
+    IEnumerator LargeLaserDamage()
+    {
+        while (_largeLaserHit)
+        {
+            UpdateHealth(5);
+            Destroyed();
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
@@ -136,7 +177,6 @@ public class Boss : MonoBehaviour
     }
     IEnumerator Stage1Movement()
     {
-
         while (_stage < 4 && transform.position.x > -3f)
         {
             transform.Translate(Vector3.left * Time.deltaTime * 2f);
@@ -147,7 +187,6 @@ public class Boss : MonoBehaviour
             transform.Translate(Vector3.right * Time.deltaTime * 2f);
             yield return new WaitForEndOfFrame();
         }
-
         if (_stage < 4)
         {
             StartCoroutine(Stage1Movement());
@@ -156,18 +195,14 @@ public class Boss : MonoBehaviour
         {
             StartCoroutine(Stage4Movement());
         }
-
     }
 
     IEnumerator Stage4Movement()
     {
-
         float _followTimer = 0;
-        // while (true)
-        // {
+
         while (_player != null && _followTimer < 2f)
         {
-
             float _dif = _player.transform.position.x - transform.position.x;
             if (_dif > 0.5f)
             {
@@ -182,7 +217,6 @@ public class Boss : MonoBehaviour
                 _followTimer += Time.deltaTime;
             }
             yield return new WaitForEndOfFrame();
-
         }
 
         while (transform.position.y > -1.5f)
@@ -199,8 +233,6 @@ public class Boss : MonoBehaviour
         }
 
         StartCoroutine(FireLaser2());
-        // }
-
     }
 
 
@@ -236,7 +268,6 @@ public class Boss : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         StartCoroutine(BigLaserSeq());
-
     }
     IEnumerator BigLaserSeq()
     {
@@ -266,12 +297,10 @@ public class Boss : MonoBehaviour
         {
             StartCoroutine(FireLaser1());
         }
-
     }
 
     IEnumerator FireLaser2()
     {
-
         int i = 0;
         while (i < 3)
         {
@@ -280,9 +309,7 @@ public class Boss : MonoBehaviour
             yield return new WaitForSeconds(1.5f);
             i++;
         }
-
         StartCoroutine(Stage4Movement());
-
     }
     void StageThree()
     {
@@ -291,14 +318,14 @@ public class Boss : MonoBehaviour
     }
     void Destroyed()
     {
-
         GameObject _exp = Instantiate(_explosion, transform.position, Quaternion.identity);
         _exp.transform.localScale = Vector3.one * 1.5f;
         Instantiate(_explosion, transform.position + new Vector3(4f, 2.75f, 0f), Quaternion.identity);
         Instantiate(_explosion, transform.position + new Vector3(-5.5f, 1.5f, 0f), Quaternion.identity);
 
-        _audioSource.clip = _explodeAudioClip;
-        _audioSource.Play();
+        AudioSource.PlayClipAtPoint(_explodeAudioClip, transform.position);
+
+        _UIManager.Victory();
         Destroy(gameObject);
     }
 
@@ -317,7 +344,6 @@ public class Boss : MonoBehaviour
         //stages
         if (_totalHP < 1.6f && _stage == 1)
         {
-            Debug.Log("stage2");
             _stage = 2;
             _wings = GetComponentsInChildren<BossWing>();
             foreach (var item in _wings)
@@ -330,7 +356,6 @@ public class Boss : MonoBehaviour
         }
         if (_totalHP <= 1f && _stage <= 2)
         {
-            Debug.Log("stage3");
             _takingDamage = true;
             _stage = 3;
             _shield.SetActive(false);
@@ -338,8 +363,6 @@ public class Boss : MonoBehaviour
         }
         if (_totalHP <= 0.5f && _stage <= 3)
         {
-            Debug.Log("stage4");
-
             _stage = 4;
         }
         if (_totalHP <= 0f)
@@ -363,6 +386,5 @@ public class Boss : MonoBehaviour
     {
         _audioSource.clip = _explodeAudioClip;
         _audioSource.Play();
-
     }
 }

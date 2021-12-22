@@ -47,10 +47,13 @@ public class Player : MonoBehaviour
     private float _thrusterCharge = 0.7f;
     private ChargeBar _chargeBar;
     private bool _thrusterDisable = false;
+    //lives
 
     [SerializeField]
     private GameObject _leftEngines, _rightEngines;
     private int _lives = 3;
+    private bool _invulnerable = false;
+    private SpriteRenderer _spriteRenderer;
 
     private int _score = 0;
 
@@ -103,6 +106,7 @@ public class Player : MonoBehaviour
 
 
         _spawnManager = GameObject.Find("Spawn Manager").GetComponent<SpawnManager>();
+        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         _UIManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         _laserAudio = GetComponent<AudioSource>();
         _chargeBar = GameObject.Find("ChargeBar").GetComponent<ChargeBar>();
@@ -145,6 +149,10 @@ public class Player : MonoBehaviour
         if (_spawnManager == null)
         {
             Debug.LogError("Spawn Manager is NULL");
+        }
+        if (_spriteRenderer == null)
+        {
+            Debug.LogError("Sprite Renderer is Null");
         }
         if (_UIManager == null)
         {
@@ -332,6 +340,18 @@ public class Player : MonoBehaviour
             return _laserPrefab;
         }
     }
+    IEnumerator InvulnerableCountDown()
+    {
+        _invulnerable = true;
+        Color _c = _spriteRenderer.color;
+        _c.a = 0.7f;
+        _spriteRenderer.color = _c;
+        yield return new WaitForSeconds(0.5f);
+        _invulnerable = false;
+        _c.a = 1f;
+        _spriteRenderer.color = _c;
+
+    }
 
     IEnumerator TripleShotCountDown()
     {
@@ -418,32 +438,36 @@ public class Player : MonoBehaviour
 
     public void TakeDamage()
     {
-        if (_shieldCount > 0)
+        if (!_invulnerable)
         {
+            StartCoroutine(InvulnerableCountDown());
+            if (_shieldCount > 0)
+            {
 
-            _shieldCount--;
-            ShieldUpdate();
+                _shieldCount--;
+                ShieldUpdate();
 
-            _laserAudio.clip = _shieldHitAudio;
+                _laserAudio.clip = _shieldHitAudio;
+                _laserAudio.Play();
+                StartCoroutine(CameraShake());
+                return;
+            }
+
+            _laserAudio.clip = _hitAudio;
             _laserAudio.Play();
             StartCoroutine(CameraShake());
-            return;
-        }
 
-        _laserAudio.clip = _hitAudio;
-        _laserAudio.Play();
-        StartCoroutine(CameraShake());
+            _lives--;
+            _lives = Mathf.Max(_lives, 0);
 
-        _lives--;
-        _lives = Mathf.Max(_lives, 0);
-
-        EngingUpdate();
-        _UIManager.LivesUpDate(_lives);
-        if (_lives <= 0)
-        {
-            Instantiate(_explosion, transform.position, Quaternion.identity);
-            _spawnManager.OnPlayerDeath();
-            Destroy(this.gameObject);
+            EngingUpdate();
+            _UIManager.LivesUpDate(_lives);
+            if (_lives <= 0)
+            {
+                Instantiate(_explosion, transform.position, Quaternion.identity);
+                _spawnManager.OnPlayerDeath();
+                Destroy(this.gameObject);
+            }
         }
     }
 
@@ -518,6 +542,20 @@ public class Player : MonoBehaviour
         {
             _missileCount++;
             _UIManager.MissileUpdate(_missileCount);
+        }
+
+    }
+    public void LifeCollected()
+    {
+        if (_lives < 3)
+        {
+            _lives++;
+            _UIManager.LivesUpDate(_lives);
+        }
+        else if (_shieldCount < 3)
+        {
+            _shieldCount++;
+            ShieldUpdate();
         }
 
     }

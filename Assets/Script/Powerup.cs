@@ -6,6 +6,7 @@ public class Powerup : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 3.0f;
+    float _randomOffset = 0;
     [SerializeField]
     private bool _debuff = false;
     /*
@@ -21,6 +22,7 @@ public class Powerup : MonoBehaviour
     4 = blast shell
     5 = big laser
     6 = missile
+    7 = life up
     */
     [SerializeField]
     private AudioClip _pickupAudio;
@@ -47,13 +49,13 @@ public class Powerup : MonoBehaviour
         {
             Debug.LogError("Audio Manager is null");
         }
-
+        _randomOffset = Random.Range(0f, 1f) - 0.5f;
     }
 
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(Vector3.down * _speed * Time.deltaTime);
+        transform.Translate(Vector3.down * (_speed + _randomOffset)  * Time.deltaTime);
         if (_player != null)
         {
             Magnetize();
@@ -88,12 +90,11 @@ public class Powerup : MonoBehaviour
 
             Destroy(gameObject);
         }
-        if (other.tag == "Enemy")
+        if (other.tag == "Enemy" && !_debuff)
         {
             GameObject _explosion = Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
             _explosion.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
             Destroy(gameObject);
-
         }
     }
     void Debuffs(Player player)
@@ -133,6 +134,9 @@ public class Powerup : MonoBehaviour
                 break;
             case 6:
                 player.MissileCollected();
+                break;
+            case 7:
+                player.LifeCollected();
                 break;
             default:
                 break;

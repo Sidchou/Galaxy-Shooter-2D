@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 3;
+    float _randomOffset = 0;
     [SerializeField]
     private float _rotate = 0;
 
@@ -73,6 +74,7 @@ public class Enemy : MonoBehaviour
         NullCheck();
 
         InitID();
+        _randomOffset = Random.Range(0f, 1f) - 0.5f;
     }
 
     void NullCheck()
@@ -128,6 +130,10 @@ public class Enemy : MonoBehaviour
     }
     void InitType()
     {
+        if (_shield != null)
+        {
+            _shield.SetActive(false);
+        }
         _setSpecial = true;
         switch (_special)
         {
@@ -184,7 +190,6 @@ public class Enemy : MonoBehaviour
     {
         Vector3 _translation = Vector3.zero;
         Vector3 _rotation = Vector3.zero;
-        float _randomOffset = Random.Range(0f, 1f) - 0.5f;
         switch (_enemyID)
         {
             case 0:
@@ -248,7 +253,7 @@ public class Enemy : MonoBehaviour
                 LaserCollision(other);
             }
 
-            if (other.tag == "Blast")
+            if (other.tag == "Blast" || other.tag == "LargeLaser")
             {
                 BlastCollision(other);
             }
@@ -264,6 +269,7 @@ public class Enemy : MonoBehaviour
         {
             _player.TakeDamage();
         }
+        _shield.SetActive(false);
         ExplosionAnimation();
     }
     private void LaserCollision(Collider2D other)
@@ -297,8 +303,7 @@ public class Enemy : MonoBehaviour
     private void ExplosionAnimation()
     {
         _exploding = true;
-        _Audio.clip = _explosionClip;
-        _Audio.Play();
+        AudioSource.PlayClipAtPoint(_explosionClip, transform.position);
 
         if (_enemyID == 1)
         {
@@ -340,7 +345,6 @@ public class Enemy : MonoBehaviour
         {
             _Audio.clip = _loseShieldAudioClip;
             _Audio.Play();
-
         }
     }
 

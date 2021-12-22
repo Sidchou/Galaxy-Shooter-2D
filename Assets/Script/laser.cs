@@ -83,8 +83,6 @@ public class Laser : MonoBehaviour
                 DestroyLaser();
             }
         }
-
-
     }
     void DestroyLaser()
     {

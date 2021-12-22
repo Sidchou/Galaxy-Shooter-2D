@@ -9,9 +9,8 @@ public class Menu : MonoBehaviour
     /*
     0 - main
     1 - audio
-    2 - video
-    3 - control
-    4 - credit
+    2 - control
+    3 - credit
  */
 
     // Start is called before the first frame update

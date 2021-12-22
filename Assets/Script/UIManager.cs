@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
     private Image _roundPrefab;
     private Image[] _rounds = new Image[15];
 
-    
+
     [SerializeField]
     private Image[] _shellUI;
     [SerializeField]
@@ -54,32 +54,32 @@ public class UIManager : MonoBehaviour
             Debug.LogError("GameManager is null");
 
         }
-
+        Debug.Log("Screen Width : " + Screen.width);
     }
-    void AmmoSetup() {
+    void AmmoSetup()
+    {
         //spwaning not dynamic
         for (int i = 0; i < _rounds.Length; i++)
         {
-            _rounds[i] = Instantiate(_roundPrefab, _ammo.transform.position + Vector3.right * i*20, Quaternion.identity);
-            _rounds[i].transform.SetParent(_ammo.transform,true);
+            _roundPrefab.transform.localScale = Vector3.one * Screen.width / 1000f;
+            _rounds[i] = Instantiate(_roundPrefab, _ammo.transform.position + Vector3.right * i * Screen.width / 30f, Quaternion.identity);
+            _rounds[i].transform.SetParent(_ammo.transform, true);
         }
         AmmoUpDate(15);
     }
-     void GameOver(bool end) {
+    void GameOver(bool end)
+    {
         StartCoroutine(TextFlicker(end));
         _RestartText.gameObject.SetActive(end);
     }
 
     ///// Coroutine ////
 
-    IEnumerator ShowWave(){
-        _WaveText.enabled = true;
-        yield return new WaitForSeconds(2f);
-        _WaveText.enabled = false;
-    }
-    IEnumerator TextFlicker(bool end) 
+
+    IEnumerator TextFlicker(bool end)
     {
-        while (end) {
+        while (end)
+        {
 
             _GameOverText.gameObject.SetActive(true);
             yield return new WaitForSeconds(0.5f);
@@ -89,24 +89,30 @@ public class UIManager : MonoBehaviour
         }
         _GameOverText.gameObject.SetActive(false);
     }
-
+    IEnumerator ShowWave()
+    {
+        _WaveText.enabled = true;
+        yield return new WaitForSeconds(2f);
+        _WaveText.enabled = false;
+    }
     ///// Public Method ////
 
-    public void ScoreUpDate( int score){
+    public void ScoreUpDate(int score)
+    {
         string _text = "Score: " + score;
         _ScoreBoard.text = _text;
-    
     }
     public void LivesUpDate(int lives)
     {
-        _livesDisplay.sprite =_livesSprite[lives];
+        _livesDisplay.sprite = _livesSprite[lives];
         if (lives == 0)
         {
             GameOver(true);
             _gameManager.GameOver();
         }
     }
-    public void ShieldUpDate(int Shields) {
+    public void ShieldUpDate(int Shields)
+    {
         for (int i = 0; i < _shieldUI.Length; i++)
         {
             if (i < Shields)
@@ -125,7 +131,7 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < _rounds.Length; i++)
         {
-            Vector4 color = _rounds[i].color; 
+            Vector4 color = _rounds[i].color;
 
             if (i < rounds)
             {
@@ -140,7 +146,8 @@ public class UIManager : MonoBehaviour
 
         }
     }
-    public void BlastShellUpdate(int shells) {
+    public void BlastShellUpdate(int shells)
+    {
 
         for (int i = 0; i < _shellUI.Length; i++)
         {
@@ -155,7 +162,8 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void MissileUpdate(int missiles) {
+    public void MissileUpdate(int missiles)
+    {
         for (int i = 0; i < _missileUI.Length; i++)
         {
             if (i < missiles)
@@ -169,22 +177,33 @@ public class UIManager : MonoBehaviour
         }
     }
     public void PauseMenu(bool isPaused)
-    { 
+    {
+        if (isPaused) { _WaveText.color = new Color(1, 1, 1, 0); }
+        else { _WaveText.color = new Color(1, 1, 1, 1); }
         _menu.SetActive(isPaused);
         _gameManager.pauseGame(isPaused);
     }
-    public void WaveText(int _wave){
+    public void WaveText(int _wave)
+    {
         _introText.enabled = false;
         if (_wave == 10)
         {
             _WaveText.text = " BOSS ";
-        } else {
-        _WaveText.text = "Wave " + Mathf.Ceil((float)_wave/10f) + " - " + _wave%10;
+        }
+        else
+        {
+            _WaveText.text = "Wave " + Mathf.Ceil((float)_wave / 10f) + " - " + _wave % 10;
         }
         StartCoroutine(ShowWave());
     }
 
 
-
+    public void Victory()
+    {
+        {
+            _WaveText.text = " Victory! ";
+        }
+        _WaveText.enabled = true;
+    }
 
 }

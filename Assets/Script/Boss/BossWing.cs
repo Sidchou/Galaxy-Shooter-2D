@@ -17,7 +17,7 @@ public class BossWing : MonoBehaviour
     [SerializeField]
     private Vector3 _position2;
     private bool _takingDamage = false;
-
+    private bool _largeLaserHit = false;
     private Boss _bossBody;
     private Player _player;
 
@@ -61,12 +61,10 @@ public class BossWing : MonoBehaviour
         _bossBody.ExplodeAudio();
         GameObject _exp = Instantiate(_explosion, _pos, Quaternion.identity, gameObject.transform);
         _exp.transform.localScale = Vector3.one * 0.1f;
-
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-
         if (_takingDamage == true && !_exploding)
         {
             if (other.tag == "Laser")
@@ -75,7 +73,6 @@ public class BossWing : MonoBehaviour
                 Destroy(other.gameObject);
                 TakeDamage(10);
                 Destroyed();
-
             }
             if (other.tag == "Blast")
             {
@@ -83,25 +80,32 @@ public class BossWing : MonoBehaviour
                 TakeDamage(20);
                 Destroyed();
             }
-        }
-        if (other.tag == "Player")
-        {
-            Player _player = other.GetComponent<Player>();
-            if (_player != null)
+            if (other.tag == "LargeLaser")
             {
-                TakeDamage(5);
-                _player.TakeDamage();
+                StartCoroutine(LargeLaserDamage());
+            }
+            if (other.tag == "Player")
+            {
+                Player _player = other.GetComponent<Player>();
+                if (_player != null)
+                {
+                    TakeDamage(5);
+                    _player.TakeDamage();
+                }
             }
         }
+
     }
 
     void OnTriggerStay2D(Collider2D other)
     {
-        if (other.tag == "LargeLaser" && !_exploding)
+        if (other.tag == "LargeLaser")
         {
-            TakeDamage(1);
-            Destroyed();
-
+            _largeLaserHit = true;
+        }
+        else
+        {
+            _largeLaserHit = false;
         }
     }
     void TakeDamage(float _damage)
@@ -109,7 +113,6 @@ public class BossWing : MonoBehaviour
         float damage = Mathf.Min(_damage, _health);
         _health -= damage;
         _bossBody.UpdateHealth(damage);
-
     }
     void Destroyed()
     {
@@ -122,7 +125,6 @@ public class BossWing : MonoBehaviour
 
             Destroy(gameObject);
         }
-
     }
 
 
@@ -151,6 +153,15 @@ public class BossWing : MonoBehaviour
             }
             yield return new WaitForEndOfFrame();
             _t += Time.deltaTime;
+        }
+    }
+    IEnumerator LargeLaserDamage()
+    {
+        while (!_exploding && _largeLaserHit)
+        {
+            TakeDamage(5);
+            Destroyed();
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
